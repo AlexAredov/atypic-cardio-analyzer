@@ -159,22 +159,22 @@ def circle(time, voltage, avr_rad=1000):
         ma = nearest_value(dff[0], dff[1], x[np.argmax(y)], np.min(y))
 
     rad, x_r, y_r = radius(dff[0][ma], dff[1][ma], dff[0][ma + o], dff[1][ma + o], dff[0][ma - o], dff[1][ma - o])
-    k = 0
-    try:
-        while rad > avr_rad:
-            k += 1
-            ma -= 5
-            rad_new, x_r_new, y_r_new = radius(dff[0][ma], dff[1][ma], dff[0][ma + o], dff[1][ma + o], dff[0][ma - o],
-                                               dff[1][ma - o])
-            if k > 100:
-                break
-        if rad_new < rad:
-            return rad_new, x_r_new, y_r_new
-        else:
-            return rad, x_r, y_r
-
-    except Exception as e:
-        return rad, x_r, y_r
+    x = np.array(time)
+    y = np.array(voltage)
+    n = 1
+    while rad > avr_rad:
+        x = x[:int(len(y)/2**n)]
+        y = y[:int(len(y)/2**n)]
+        n+=1
+        ma1 = nearest_value(x, y, x[np.argmax(y)], np.min(y))
+        if ma1 + 1 < len(x):
+            rad, x_r, y_r = radius(x[ma1], y[ma1], x[ma1 + 1], y[ma1 + 1], x[ma1 - 1], y[ma1 - 1])
+        elif ma1 - 1 > 0:
+            ma1 -= 1
+            rad, x_r, y_r = radius(x[ma1], y[ma1], x[ma1 + 1], y[ma1 + 1], x[ma1 - 1], y[ma1 - 1])
+        if n > 4:
+            break
+    return rad, x_r, y_r
 
 def save_aps_to_txt(destination, aps, time, voltage):
     if os.path.exists(destination):
